@@ -1,10 +1,9 @@
 package Emc2;
 use strict;
 use warnings FATAL => 'all';
-use v5.14;
+use v5.10;
 use Carp qw|croak|;
-use List::MoreUtils qw|first_index|;
-use Data::Dump;
+# use Data::Dump;
 
 
 # Too lazy to write:
@@ -80,9 +79,8 @@ sub _module_declaration { my ($module_name, $dependencies, $module_func) = @_;
     return _module_func_inject_dependencies($module_name) if defined wantarray;
 }
 
-# An 'injected module func' is an anonymous sub that calls the module's '$module_func' with it's dependencies:
-# sub { $module_func->(@$dependencies, @_); };
-# i.e the module has been 'injected' with it's dependencies
+# Recursively resolve the dependencies for the module with name $module_name
+# and then call the module's $module_func with the resolved dependencies.
 #
 sub _module_func_inject_dependencies { my ($module_name, $overwrites) = @_;
     # say "module $module_name (", 0+@{ $dependencies_for{$module_name} }, ')';
