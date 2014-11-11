@@ -3,6 +3,7 @@ use strict;
 use warnings FATAL => 'all';
 use v5.10;
 use Carp qw|croak|;
+use PadWalker ();
 # use Data::Dump;
 
 
@@ -30,7 +31,7 @@ sub _do { # my ($dirfilename, $module_name) = @_;
 
 
 use Exporter 'import';
-our @EXPORT    = qw|module|;
+our @EXPORT    = qw|module mkattrs|;
 our @EXPORT_OK = qw|main|;
 
 
@@ -216,5 +217,45 @@ sub _module_name_to_package_name { my ($module_name) = @_;
     $package_name;
 }
 
+
+sub mkattrs { my ($type_name) = @_;
+    $type_name //= 'UnknownType';
+    my $attrs = {};
+
+    my $my_vars = PadWalker::peek_my(1);
+    for my $my_var (keys %$my_vars) {
+
+        # Private attributes start with '_', e.g: $_foo,
+        # we ignore them.
+        next if '_' eq substr $my_var, 1, 1;
+
+        # '$args' is "special", ignore it as well.
+        next if $my_var eq '$args';
+
+        my $varname = substr $my_var, 1; # remove the '$';
+
+        if (ref ${ $my_vars->{ $my_var } } eq 'CODE') {
+            # The attribute is a method.
+            $attrs->{$varname} = ${ $my_vars->{ $my_var } };
+        }
+        elsif ('_' eq substr $my_var, -1) {
+            # The attribute is "readonly", e.g: $bar_
+            # $varname = substr $varname, 0, -1;
+            chop $varname;
+            $attrs->{$varname} = {
+                get => sub { ${ $my_vars->{$my_var} } },
+                set => sub { croak "[$type_name] error: attribute '$varname' is readonly" },
+            };
+        }
+        else {
+            $attrs->{$varname} = {
+                get => sub { ${ $my_vars->{$my_var} } },
+                set => sub { ${ $my_vars->{$my_var} } = $_[0]; },
+            };
+        }
+    }
+
+    $attrs;
+}
 
 2;
