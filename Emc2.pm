@@ -31,7 +31,7 @@ sub _do { # my ($dirfilename, $module_name) = @_;
 
 
 use Exporter 'import';
-our @EXPORT    = qw|module mkattrs|;
+our @EXPORT    = qw|module self|;
 our @EXPORT_OK = qw|main|;
 
 
@@ -185,7 +185,6 @@ sub _require { my ($module_name) = @_;
             next;
         }
 
-        # my $res = do $dirfilename;
         # if (!defined $res) {
         #      croak $@ ? "$@Compilation failed in _require"
         #               : "Can't locate $filename: $! \n";
@@ -218,7 +217,7 @@ sub _module_name_to_package_name { my ($module_name) = @_;
 }
 
 
-sub mkattrs { my ($type_name) = @_;
+sub self { my ($type_name) = @_;
     $type_name //= 'UnknownType';
     my $attrs = {};
 
