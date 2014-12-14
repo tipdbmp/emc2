@@ -10,7 +10,6 @@ our $DEBUG = 0;
 # The order of the 'FILTER { ... };' declarations is important. Do NOT change it.
 # I think the order in which the FILTERs are "applied" is reverse of their declaration.
 
-
 # Getters.
 # Make "$foo.x" become "$foo->{'x'}{'get'}()"
 
@@ -52,7 +51,7 @@ FILTER {
         (
             \$ \w+ \. [.\w]+
 
-            \s* = \s*
+            \s* = [^=] \s*
 
             [^;]+
         )
@@ -87,7 +86,7 @@ sub dot_notation_to_arrow_notation_setters_ops { my ($dot_notation_expr) = @_;
     # say $dnt_setter_lhs;
 
     return join '',
-        $dnt_setter_lhs, '(', $dnt_getters_lhs, ' ', $op, $rhs, ')',
+        $dnt_setter_lhs, '(', $dnt_getters_lhs, ' ', $op, '(', $rhs, ')', ')',
         ;
 }
 
